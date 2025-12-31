@@ -24,7 +24,7 @@ export const adminDashBoardSidebarLinks: DashBoardSideBarMenuInterface[] = [
   {
     label: "Sub-Categories",
     icon: "categories",
-    link: "/dashboard/admin/subCategories",
+    link: "/dashboard/admin/subcategories",
   },
   {
     label: "Coupons",

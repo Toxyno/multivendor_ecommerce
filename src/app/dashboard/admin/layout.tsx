@@ -20,7 +20,7 @@ const children = async ({ children }: { children: ReactNode }) => {
     <div className="w-full h-full">
       {/*Sidebar can be added here  */}
       <Sidebar isAdmin={user?.privateMetadata?.role === "ADMIN"} />
-      <div className="w-full ml-75">
+      <div className="ml-75">
         {/* Header can be added here */}
         <Header />
         <div className="w-full mt-18.75 p-4">{children}</div>

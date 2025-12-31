@@ -6,6 +6,15 @@ const nextConfig = {
   allowedDevOrigins: [
     "https://brantley-troublous-galvanometrically.ngrok-free.dev",
   ],
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

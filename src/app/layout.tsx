@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { ToastProviderCustom } from "@/components/ui/use-toast";
+import ModalProvider from "@/providers/ModalProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +41,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <ToastProviderCustom>
+              <ModalProvider>{children}</ModalProvider>
+              <Toaster />
+              <SonnerToaster position="bottom-left" />
+            </ToastProviderCustom>
           </ThemeProvider>
         </body>
       </html>

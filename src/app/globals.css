@@ -113,6 +113,23 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* When Cloudinary widget is open, don't let Radix Dialog block clicks */
+body.cld-open [data-slot="dialog-overlay"],
+body.cld-open [data-slot="dialog-content"] {
+  pointer-events: none !important;
+}
+
+/* Cloudinary widget should always be clickable and above everything */
+.cloudinary_widget,
+.cloudinary-overlay,
+.cloudinary_overlay,
+.cloudinary-widget,
+#cloudinary-widget,
+[id*="cloudinary-widget"] {
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
