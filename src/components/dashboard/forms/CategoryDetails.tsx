@@ -2,8 +2,8 @@
 //import { Category } from "@/generated/prisma/client";
 import type { Category } from "@/types/Category";
 //import { CategoryDetailsSchema, categoryDetailsSchema } from "@/lib/schemas";
-import { categoryDetailsSchema } from "@/lib/categoryDetailsSchema";
-import type { CategoryDetailsSchema } from "@/lib/categoryDetailsSchema";
+import { categoryDetailsSchema } from "@/lib/Schemas/categoryDetailsSchema";
+import type { CategoryDetailsSchema } from "@/lib/Schemas/categoryDetailsSchema";
 
 import { FC } from "react";
 import { useForm } from "react-hook-form";

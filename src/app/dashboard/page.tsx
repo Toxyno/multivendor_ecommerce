@@ -1,8 +1,10 @@
 import { currentUser } from "@clerk/nextjs/server";
 //import { redirect } from "next/dist/client/components/navigation";
 import { redirect } from "next/navigation";
+//import { unstable_noStore as noStore } from "next/cache";
 
 const DashBoardPage = async () => {
+  //noStore();
   const user = await currentUser();
 
   const role = (

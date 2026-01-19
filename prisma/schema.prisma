@@ -8,6 +8,18 @@ datasource db {
   relationMode = "prisma"
 }
 
+enum StoreStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum user_role {
+  USER
+  ADMIN
+  SELLER
+}
+
 model user {
   Id        String    @id
   name      String
@@ -16,6 +28,8 @@ model user {
   role      user_role @default(USER)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  stores Store[] @relation("UserToStore")
 }
 
 model Category {
@@ -25,6 +39,7 @@ model Category {
   url           String
   featured      Boolean       @default(false)
   subCategories SubCategory[] @relation("CategoryToSubCategory")
+  products      Product[]     @relation("CategoryToProduct")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,14 +54,185 @@ model SubCategory {
   categoryId String
   category   Category @relation("CategoryToSubCategory", fields: [categoryId], references: [id])
 
+  products Product[] @relation("SubCategoryToProduct")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([categoryId])
 }
 
-enum user_role {
-  USER
-  ADMIN
-  SELLER
+model Store {
+  id                     String      @id @default(uuid())
+  name                   String
+  description            String      @db.Text
+  email                  String      @unique(map: "Store_email_key")
+  phone                  String
+  url                    String      @unique(map: "Store_url_key")
+  logo                   String
+  cover                  String
+  status                 StoreStatus @default(PENDING)
+  averageRating          Float       @default(0)
+  featured               Boolean     @default(false)
+  returnPolicy           String?
+  defaultShippingService String?
+  defaultShippingFee     Float?
+  defaultDeliveryTimeMin Int?
+  defaultDeliveryTimeMax Int?
+  ownerId                String
+  owner                  user        @relation("UserToStore", fields: [ownerId], references: [Id])
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  products Product[] @relation("StoreToProduct")
+
+  @@index([ownerId])
+}
+
+model Product {
+  id          String @id @default(uuid())
+  name        String
+  description String @db.LongText
+  slug        String @unique(map: "Product_slug_key")
+  brand       String
+  rating      Float  @default(0)
+
+  variants ProductVariant[] @relation("ProductToProductVariant")
+
+  //We create a store Relation-shows the relationship between Product and Store
+  storeId String
+  store   Store  @relation("StoreToProduct", fields: [storeId], references: [id])
+
+  //We create a categpry Relation-shows the relationship between Category and Store
+  categoryId String
+  category   Category @relation("CategoryToProduct", fields: [categoryId], references: [id])
+
+  //We create a Subcategory Relation-shows the relationship between SubCategory and Product
+  subCategoryId String
+  subCategory   SubCategory @relation("SubCategoryToProduct", fields: [subCategoryId], references: [id])
+
+  specs     Spec[]      @relation("ProductToSpec")
+  questions Questions[] @relation("ProductToQuestion")
+  offerTags OfferTag[]  @relation("OfferTagToProduct")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now()) @updatedAt
+
+  @@index([storeId])
+  @@index([categoryId])
+  @@index([subCategoryId])
+}
+
+model ProductVariant {
+  id                 String  @id @default(uuid())
+  variantName        String
+  variantDescription String? @db.LongText
+  variantImage       String  @db.Text
+  slug               String  @unique(map: "ProductVariant_slug_key")
+  isSale             Boolean @default(false)
+  saleEndDate        String? @db.Text
+  keywords           String  @db.Text
+  sku                String  @unique(map: "ProductVariant_sku_key")
+
+  //We create a Product Relation-shows the relationship between ProductVariant and Product
+  productId String
+  product   Product @relation("ProductToProductVariant", fields: [productId], references: [id])
+
+  sizes Size[] @relation("ProductVariantToSize")
+
+  images ProductVariantImage[] @relation("ProductVariantToProductVariantImage")
+  colors Color[]               @relation("ProductVariantToColor")
+
+  specs Spec[] @relation("ProductVariantSpec")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([productId])
+}
+
+model Size {
+  id       String @id @default(uuid())
+  size     String
+  quantity Int
+  price    Float
+  discount Float  @default(0)
+
+  productVariantId String
+  productVariant   ProductVariant @relation("ProductVariantToSize", fields: [productVariantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productVariantId])
+}
+
+model ProductVariantImage {
+  id       String @id @default(uuid())
+  imageUrl String @db.Text
+  alt      String @default("")
+
+  productVariantId String
+  productVariant   ProductVariant @relation("ProductVariantToProductVariantImage", fields: [productVariantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([productVariantId])
+}
+
+model Color {
+  id      String @id @default(uuid())
+  name    String
+  hexCode String
+
+  productVariantId String
+  productVariant   ProductVariant @relation("ProductVariantToColor", fields: [productVariantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([productVariantId])
+}
+
+model OfferTag {
+  id   String @id @default(uuid())
+  name String
+  url  String @unique
+
+  products Product[] @relation("OfferTagToProduct")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Spec {
+  id    String @id @default(uuid())
+  name  String
+  value String
+
+  productId String?
+  product   Product? @relation("ProductToSpec", fields: [productId], references: [id], onDelete: Cascade)
+
+  variantId String?
+  variant   ProductVariant? @relation("ProductVariantSpec", fields: [variantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([productId])
+  @@index([variantId])
+}
+
+model Questions {
+  id       String @id @default(uuid())
+  question String @db.Text
+  answer   String @db.Text
+
+  productId String
+  product   Product @relation("ProductToQuestion", fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([productId])
 }

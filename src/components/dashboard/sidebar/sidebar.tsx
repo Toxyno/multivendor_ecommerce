@@ -2,14 +2,21 @@ import Logo from "@/components/shared/logo";
 import { currentUser } from "@clerk/nextjs/server";
 import { FC } from "react";
 import UserInfo from "./user-info";
-import { adminDashBoardSidebarLinks } from "@/constants/data";
-import SidebarNavMenu from "./SidebarNavMenu";
+import {
+  adminDashBoardSidebarLinks,
+  sellerDashBoardSidebarLinks,
+} from "@/constants/data";
+import AdminNavMenu from "./AdminNavMenu";
+import { Store } from "@/generated/prisma";
+import SellerNavMenu from "./SellerNavMenu";
+import StoreSwitcher from "./StoreSwitcher";
 
 interface SidebarProps {
   isAdmin?: boolean;
+  stores?: Store[];
 }
 
-const Sidebar: FC<SidebarProps> = async ({ isAdmin }) => {
+const Sidebar: FC<SidebarProps> = async ({ isAdmin, stores }) => {
   const user = await currentUser();
 
   return (
@@ -19,7 +26,12 @@ const Sidebar: FC<SidebarProps> = async ({ isAdmin }) => {
       {user && <UserInfo user={user} />}
       {/* SidebarNavMenu component can be added here in the future */}
       {/* <SidebarNavMenu menuLinks={isAdmin ? adminDashBoardSidebarLinks : []} /> */}
-      {isAdmin && <SidebarNavMenu menuLinks={adminDashBoardSidebarLinks} />}
+      {!isAdmin && stores && <StoreSwitcher stores={stores} />}
+      {isAdmin ? (
+        <AdminNavMenu menuLinks={adminDashBoardSidebarLinks} />
+      ) : (
+        <SellerNavMenu menuLinks={sellerDashBoardSidebarLinks} />
+      )}
     </div>
   );
 };

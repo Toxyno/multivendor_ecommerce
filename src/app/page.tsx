@@ -1,8 +1,10 @@
 import ThemeToggle from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
+// import updateVariantImage from "@/migrationScripts/updateVariantImage";
 import { UserButton } from "@clerk/nextjs";
 
-export default function Home() {
+export default async function Home() {
+  //await updateVariantImage();
   return (
     <div>
       <div className="w-100 flex justify-end">

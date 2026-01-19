@@ -2,8 +2,8 @@
 //import { Category } from "@/generated/prisma/client";
 import type { SubCategory } from "@/types/SubCategory";
 //import { SubCategoryDetailsSchema, SubCategoryDetailsSchema } from "@/lib/schemas";
-import { subCategoryDetailsSchema } from "@/lib/SubCategoryDetailsSchema";
-import type { SubCategoryDetailsSchema } from "@/lib/SubCategoryDetailsSchema";
+import { subCategoryDetailsSchema } from "@/lib/Schemas/SubCategoryDetailsSchema";
+import type { SubCategoryDetailsSchema } from "@/lib/Schemas/SubCategoryDetailsSchema";
 
 import { FC } from "react";
 import { useForm } from "react-hook-form";
