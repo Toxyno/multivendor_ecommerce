@@ -63,28 +63,32 @@ model SubCategory {
 }
 
 model Store {
-  id                     String      @id @default(uuid())
-  name                   String
-  description            String      @db.Text
-  email                  String      @unique(map: "Store_email_key")
-  phone                  String
-  url                    String      @unique(map: "Store_url_key")
-  logo                   String
-  cover                  String
-  status                 StoreStatus @default(PENDING)
-  averageRating          Float       @default(0)
-  featured               Boolean     @default(false)
-  returnPolicy           String?
-  defaultShippingService String?
-  defaultShippingFee     Float?
-  defaultDeliveryTimeMin Int?
-  defaultDeliveryTimeMax Int?
-  ownerId                String
-  owner                  user        @relation("UserToStore", fields: [ownerId], references: [Id])
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
+  id                               String      @id @default(uuid())
+  name                             String
+  description                      String      @db.Text
+  email                            String      @unique(map: "Store_email_key")
+  phone                            String
+  url                              String      @unique(map: "Store_url_key")
+  logo                             String
+  cover                            String
+  status                           StoreStatus @default(PENDING)
+  averageRating                    Float       @default(0)
+  featured                         Boolean     @default(false)
+  returnPolicy                     String      @default("30-day return policy")
+  defaultShippingService           String      @default("International Delivery")
+  defaultShippingFeePerItem        Float       @default(0)
+  defaultShippingFeeAdditionalItem Float       @default(0)
+  defaultShippingFeePerKg          Float       @default(0)
+  defaultShippingFeeFixed          Float       @default(0)
+  defaultDeliveryTimeMin           Int         @default(7)
+  defaultDeliveryTimeMax           Int         @default(31)
+  ownerId                          String
+  owner                            user        @relation("UserToStore", fields: [ownerId], references: [Id])
+  createdAt                        DateTime    @default(now())
+  updatedAt                        DateTime    @updatedAt
 
-  products Product[] @relation("StoreToProduct")
+  products      Product[]      @relation("StoreToProduct")
+  shippingRates ShippingRate[] @relation("ShippingRateToStore")
 
   @@index([ownerId])
 }
@@ -235,4 +239,42 @@ model Questions {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([productId])
+}
+
+model Country {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  code          String         @unique
+  //phoneCode String
+  //states    state[]  @relation("CountryToState")
+  shippingRates ShippingRate[] @relation("ShippingRateToCountry")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ShippingRate {
+  id String @id @default(uuid())
+
+  shippingService           String
+  shippingFeePerItem        Float
+  shippingFeeAdditionalItem Float
+  shippingFeePerKg          Float
+  shippingFeeFixed          Float
+  deliveryTimeMin           Int
+  deliveryTimeMax           Int
+  returnPolicy              String
+
+  countryId String
+  country   Country @relation("ShippingRateToCountry", fields: [countryId], references: [id])
+
+  storeId String
+  store   Store  @relation("ShippingRateToStore", fields: [storeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([storeId, countryId], map: "ShippingRate_storeId_countryId_key")
+  @@index([countryId])
+  @@index([storeId])
 }

@@ -1,5 +1,6 @@
+import { getStoreDefaultShippingDetails } from "@/actions/stores/getStoreDefaultShippingDetails";
 import getAllSubCategories from "@/actions/subcategories/getAllSubCategory";
-import { Prisma } from "@/generated/prisma/edge";
+import { Prisma, ShippingRate } from "@/generated/prisma/edge";
 
 export interface DashBoardSideBarMenuInterface {
   label: string;
@@ -14,8 +15,12 @@ export type SubCategoryWithCategoryType = Prisma.PromiseReturnType<
   typeof getAllSubCategories
 >[0];
 
-//Product plus variants type
+//Store Default Shipping Details type
+export type StoreDefaultShippingDetailsType = Prisma.PromiseReturnType<
+  typeof getStoreDefaultShippingDetails
+>;
 
+//Product plus variants type
 export type ProductWithVariantType = {
   productId: string;
   variantId: string;
@@ -54,4 +59,10 @@ export type ProductWithVariantType = {
   }[];
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type CountryWithShippingRateType = {
+  countryId: string;
+  countryName: string;
+  ShippingRate: ShippingRate;
 };

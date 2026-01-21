@@ -1,10 +1,14 @@
 import ThemeToggle from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
+//import seedCountries from "@/migrationScripts/seedCountries";
+//import backfillStoreDefaults from "@/migrationScripts/backfillStoreDefaults";
 // import updateVariantImage from "@/migrationScripts/updateVariantImage";
 import { UserButton } from "@clerk/nextjs";
 
 export default async function Home() {
   //await updateVariantImage();
+  // await backfillStoreDefaults();
+  //await seedCountries();
   return (
     <div>
       <div className="w-100 flex justify-end">
