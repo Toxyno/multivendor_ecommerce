@@ -100,6 +100,7 @@ model Product {
   slug        String @unique(map: "Product_slug_key")
   brand       String
   rating      Float  @default(0)
+  sales       Int    @default(0)
 
   variants ProductVariant[] @relation("ProductToProductVariant")
 
@@ -136,6 +137,7 @@ model ProductVariant {
   saleEndDate        String? @db.Text
   keywords           String  @db.Text
   sku                String  @unique(map: "ProductVariant_sku_key")
+  sales              Int     @default(0)
 
   //We create a Product Relation-shows the relationship between ProductVariant and Product
   productId String

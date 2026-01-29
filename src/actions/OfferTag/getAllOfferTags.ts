@@ -49,10 +49,6 @@ const getAllOfferTags = async (storeUrl?: string) => {
   });
 
   return offerTags;
-  //   return offerTags.map((tag) => ({
-  //     ...tag,
-  //     productCount: tag.products.length,
-  //   }));
 };
 
 export default getAllOfferTags;
