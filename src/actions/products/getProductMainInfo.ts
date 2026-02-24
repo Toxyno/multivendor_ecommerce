@@ -6,6 +6,9 @@
 //- productId: string - The unique identifier of the product whose information is to be fetched.
 //Returns: An object containing the main information of the specified product.
 
+"use server";
+
+import "server-only";
 import { db } from "@/lib/db";
 
 export const getProductMainInfo = async (productId: string) => {

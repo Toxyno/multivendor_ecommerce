@@ -29,14 +29,17 @@ model user {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  stores Store[] @relation("UserToStore")
+  stores    Store[] @relation("UserToStore")
+  following Store[] @relation("UserToStoreFollowing")
+
+  reviews Review[] @relation("ReviewToUser")
 }
 
 model Category {
   id            String        @id @default(uuid())
   name          String
   image         String
-  url           String
+  url           String        @unique
   featured      Boolean       @default(false)
   subCategories SubCategory[] @relation("CategoryToSubCategory")
   products      Product[]     @relation("CategoryToProduct")
@@ -49,7 +52,7 @@ model SubCategory {
   id         String   @id @default(uuid())
   name       String
   image      String
-  url        String
+  url        String   @unique
   featured   Boolean  @default(false)
   categoryId String
   category   Category @relation("CategoryToSubCategory", fields: [categoryId], references: [id])
@@ -89,18 +92,27 @@ model Store {
 
   products      Product[]      @relation("StoreToProduct")
   shippingRates ShippingRate[] @relation("ShippingRateToStore")
+  followers     user[]         @relation("UserToStoreFollowing")
 
   @@index([ownerId])
 }
 
+enum ShippingFeeMethod {
+  ITEM
+  WEIGHT
+  FIXED
+}
+
 model Product {
-  id          String @id @default(uuid())
-  name        String
-  description String @db.LongText
-  slug        String @unique(map: "Product_slug_key")
-  brand       String
-  rating      Float  @default(0)
-  sales       Int    @default(0)
+  id                String            @id @default(uuid())
+  name              String
+  description       String            @db.LongText
+  slug              String            @unique(map: "Product_slug_key")
+  brand             String
+  rating            Float             @default(0)
+  sales             Int               @default(0)
+  numReviews        Int               @default(0)
+  shippingFeeMethod ShippingFeeMethod @default(ITEM)
 
   variants ProductVariant[] @relation("ProductToProductVariant")
 
@@ -116,11 +128,15 @@ model Product {
   subCategoryId String
   subCategory   SubCategory @relation("SubCategoryToProduct", fields: [subCategoryId], references: [id])
 
+  freeShippings FreeShipping[] @relation("ProductToFreeShipping")
+
   specs     Spec[]      @relation("ProductToSpec")
   questions Questions[] @relation("ProductToQuestion")
   offerTags OfferTag[]  @relation("OfferTagToProduct")
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @default(now()) @updatedAt
+  reviews   Review[]    @relation("ReviewToProduct")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([storeId])
   @@index([categoryId])
@@ -138,6 +154,7 @@ model ProductVariant {
   keywords           String  @db.Text
   sku                String  @unique(map: "ProductVariant_sku_key")
   sales              Int     @default(0)
+  weight             Float
 
   //We create a Product Relation-shows the relationship between ProductVariant and Product
   productId String
@@ -244,12 +261,13 @@ model Questions {
 }
 
 model Country {
-  id            String         @id @default(uuid())
-  name          String         @unique
-  code          String         @unique
+  id                    String                @id @default(uuid())
+  name                  String                @unique
+  code                  String                @unique
   //phoneCode String
   //states    state[]  @relation("CountryToState")
-  shippingRates ShippingRate[] @relation("ShippingRateToCountry")
+  shippingRates         ShippingRate[]        @relation("ShippingRateToCountry")
+  freeShippingCountries FreeShippingCountry[] @relation("FreeShippingCountryToCountry")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -279,4 +297,69 @@ model ShippingRate {
   @@unique([storeId, countryId], map: "ShippingRate_storeId_countryId_key")
   @@index([countryId])
   @@index([storeId])
+}
+
+model FreeShipping {
+  id                String                @id @default(uuid())
+  productId         String                @unique
+  product           Product               @relation("ProductToFreeShipping", fields: [productId], references: [id], onDelete: Cascade)
+  eligibleCountries FreeShippingCountry[] @relation("FreeShippingToFreeShippingCountry")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([productId])
+}
+
+model FreeShippingCountry {
+  id             String       @id @default(uuid())
+  freeShippingId String
+  freeShipping   FreeShipping @relation("FreeShippingToFreeShippingCountry", fields: [freeShippingId], references: [id], onDelete: Cascade)
+  countryId      String
+  country        Country      @relation("FreeShippingCountryToCountry", fields: [countryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // @@unique([freeShippingId, countryId], map: "FreeShippingCountry_freeShippingId_countryId_key")
+  @@index([freeShippingId])
+  @@index([countryId])
+}
+
+model Review {
+  id       String        @id @default(uuid())
+  variant  String
+  review   String        @db.Text
+  rating   Float
+  color    String
+  size     String
+  quantity String
+  likes    Int           @default(0)
+  images   ReviewImage[] @relation("ReviewToReviewImage")
+
+  userId String
+  user   user   @relation("ReviewToUser", fields: [userId], references: [Id])
+
+  productId String
+  product   Product @relation("ReviewToProduct", fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([userId])
+  @@index([productId])
+}
+
+model ReviewImage {
+  id  String @id @default(uuid())
+  url String @db.Text
+  alt String @default("")
+
+  reviewId String
+  review   Review @relation("ReviewToReviewImage", fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([reviewId])
 }

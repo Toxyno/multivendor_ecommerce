@@ -7,7 +7,7 @@ import handleProductCreate from "@/lib/Helper/handleProductCreate";
 
 export const upsertProduct = async (
   product: ProductWithVariantType,
-  storeUrl: string
+  storeUrl: string,
 ) => {
   try {
     // Retrieve current user
@@ -19,7 +19,7 @@ export const upsertProduct = async (
     // Ensure user has seller privileges
     if (user.privateMetadata.role !== "SELLER")
       throw new Error(
-        "Unauthorized Access: Seller Privileges Required for Entry."
+        "Unauthorized Access: Seller Privileges Required for Entry.",
       );
 
     // Ensure product data is provided

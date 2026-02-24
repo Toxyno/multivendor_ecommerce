@@ -6,6 +6,9 @@
 // --page: The Current page number for pagination(default: 1)
 // --pageSize: The number of products per page(default: 20)
 //Returns: An object containing paginated products, filtered variants, and pagination metadata (totalPages, currentPage, totalVariants,PageSize)
+"use server";
+
+import "server-only";
 import { db } from "@/lib/db";
 import { VariantImageType, VariantSimplified } from "@/lib/type";
 
@@ -25,6 +28,39 @@ export const getFilteredProducts = async (
     //Example filter criteria
     AND: [],
   };
+
+  //Apply store filter (using store URL)
+  if (filters.store) {
+    const store = await db.store.findUnique({
+      where: { url: filters.store },
+      select: { id: true },
+    });
+    if (store) {
+      whereClause.AND.push({ storeId: store.id });
+    }
+  }
+
+  //Apply category filter (using category URL)
+  if (filters.category) {
+    const category = await db.category.findUnique({
+      where: { url: filters.category },
+      select: { id: true },
+    });
+    if (category) {
+      whereClause.AND.push({ categoryId: category.id });
+    }
+  }
+
+  //Apply SubCategory filter (using SubCategory URL)
+  if (filters.subCategory) {
+    const subCategory = await db.subCategory.findUnique({
+      where: { url: filters.subCategory },
+      select: { id: true },
+    });
+    if (subCategory) {
+      whereClause.AND.push({ subCategoryId: subCategory.id });
+    }
+  }
 
   //Get all filtered,sorted product
   const products = await db.product.findMany({

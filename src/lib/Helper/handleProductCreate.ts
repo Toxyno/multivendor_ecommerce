@@ -5,7 +5,7 @@ import slugify from "slugify";
 
 const handleProductCreate = async (
   product: ProductWithVariantType,
-  storeId: string
+  storeId: string,
 ) => {
   // Generate unique slugs for product and variant
   const productSlug = await generateUniqueSlug(
@@ -14,7 +14,7 @@ const handleProductCreate = async (
       lower: true,
       trim: true,
     }),
-    "product"
+    "product",
   );
 
   const variantSlug = await generateUniqueSlug(
@@ -23,7 +23,7 @@ const handleProductCreate = async (
       lower: true,
       trim: true,
     }),
-    "productVariant"
+    "productVariant",
   );
   const productData = {
     id: product.productId,
@@ -56,7 +56,7 @@ const handleProductCreate = async (
           slug: variantSlug,
           variantImage: product.images.map((img) => img.url).join(","),
           sku: product.sku,
-          // weight: product.weight,
+          weight: product.weight,
           keywords: product.keywords.join(","),
           isSale: product.isSale,
           saleEndDate: product.isSale ? product.saleEndDate : undefined,

@@ -10,7 +10,7 @@ const handleCreateVariant = async (product: ProductWithVariantType) => {
       lower: true,
       trim: true,
     }),
-    "productVariant"
+    "productVariant",
   );
 
   const variantData = {
@@ -23,7 +23,7 @@ const handleCreateVariant = async (product: ProductWithVariantType) => {
     saleEndDate: product.isSale ? product.saleEndDate : "",
     sku: product.sku,
     keywords: product.keywords.join(","),
-    //weight: product.weight,
+    weight: product.weight,
     //variantImage: product.images,
     images: {
       create: product.images.map((img) => ({

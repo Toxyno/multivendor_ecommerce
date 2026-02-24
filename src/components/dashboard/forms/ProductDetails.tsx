@@ -65,6 +65,7 @@ import { format } from "date-fns";
 
 //Jodit text Editorplugin
 import JoditEditor from "jodit-react";
+import { NumberInput } from "@tremor/react";
 
 interface ProductDetailsProps {
   // Define any props if needed in the future
@@ -104,6 +105,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
           categoryId: data.categoryId,
           subCategoryId: data.subCategoryId,
           isSale: data.isSale,
+          weight: data.weight,
           saleEndDate:
             data?.saleEndDate || format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
           brand: data.brand,
@@ -127,6 +129,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
           isSale: false,
           brand: "",
           sku: "",
+          weight: 0,
           keywords: [],
           colors: [],
           sizes: [],
@@ -157,7 +160,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
 
   // State for colors
   const [colors, setColors] = useState<{ color: string }[]>(
-    data?.colors || [{ color: "" }]
+    data?.colors || [{ color: "" }],
   );
 
   //State for sizes
@@ -200,6 +203,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
               data.saleEndDate || format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
             brand: data.brand,
             sku: data.sku,
+            weight: data.weight,
             keywords: data.keywords,
             colors: data.colors,
             sizes: data.sizes,
@@ -219,6 +223,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
             isSale: false,
             brand: "",
             sku: "",
+            weight: 0,
             keywords: [],
             colors: [],
             sizes: [],
@@ -226,7 +231,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
             product_specs: [],
             variant_specs: [],
             questions: [],
-          }
+          },
     );
   }, [data, form]);
 
@@ -284,6 +289,8 @@ const ProductDetails: FC<ProductDetailsProps> = ({
     const raw = form.getValues();
     values = productDetailsSchema.parse(raw); // guarantees shape
 
+    console.log("SUBMIT questions from RAW:", values.questions);
+
     try {
       console.log("Form submitted successfully:", values);
       console.log("storeUrl passed to upsertProduct:", storeUrl);
@@ -305,6 +312,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
           saleEndDate: values.isSale ? values.saleEndDate : "",
           description: values.description,
           sku: values.sku,
+          weight: values.weight,
           brand: values.brand,
           keywords: keywords,
           colors: values.colors,
@@ -315,7 +323,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        storeUrl
+        storeUrl,
       );
 
       //displaying te success message
@@ -323,7 +331,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
         title:
           data?.productId && data?.variantId
             ? "Product updated successfully"
-            : `Congratulation! product '${response?.slug}' is now created`,
+            : `Congratulation! product '${values.name}' is now created`,
       });
 
       //redirecting the user to the stores page
@@ -373,9 +381,14 @@ const ProductDetails: FC<ProductDetailsProps> = ({
       shouldTouch: true,
       shouldValidate: true,
     });
-  }, [colors, sizes, keywords, variantSpecs, productSpecs, form]);
-
+    form.setValue("questions", questions, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  }, [colors, sizes, keywords, variantSpecs, productSpecs, questions, form]);
   console.log(`the value of the checkbox: `, form.getValues().isSale);
+  console.log("SUBMIT questions:", form.getValues().questions);
 
   return (
     <AlertDialog>
@@ -413,7 +426,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                             onRemove={(url) => {
                               const current = field.value ?? [];
                               const updatedImages = current.filter(
-                                (img) => img.url !== url
+                                (img) => img.url !== url,
                               );
                               form.setValue("images", updatedImages, {
                                 shouldDirty: true,
@@ -443,7 +456,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                               form.setValue(
                                 "images",
                                 current.filter((img) => img.url !== url),
-                                { shouldDirty: true, shouldValidate: true }
+                                { shouldDirty: true, shouldValidate: true },
                               );
                             }}
                           />
@@ -462,7 +475,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                     colorPicker
                   />
                   {form.formState.errors.colors?.message && (
-                    <p className="text-sm font-medium text-destructive text-red-600">
+                    <p className="text-sm font-medium  text-red-600">
                       {form.formState.errors.colors?.message}
                     </p>
                   )}
@@ -699,7 +712,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   </FormItem>
                 )}
               /> */}
-              {/*brand and SKU*/}
+              {/*brand , SKU and Weight*/}
               <div className="flex flex-col xl:flex-row gap-4">
                 <FormField
                   disabled={isLoading}
@@ -738,6 +751,28 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  disabled={isLoading}
+                  control={form.control}
+                  name="weight"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Product Weight</FormLabel>
+                      <FormControl>
+                        <NumberInput
+                          defaultValue={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Weight"
+                          min={0.01}
+                          step={0.01}
+                          className="shadow-none rounded-md text-sm"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               {/*variant image - keyword*/}
               <div className="flex items-center gap-10 py-14">
@@ -764,7 +799,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                               form.setValue(
                                 "images",
                                 current.filter((img) => img.url !== url),
-                                { shouldDirty: true, shouldValidate: true }
+                                { shouldDirty: true, shouldValidate: true },
                               );
                             }}
                           />
@@ -882,7 +917,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                   </div>
                 </TabsContent>
               </Tabs>
-              {/* Questions */}
+              {/* Questions and Answers*/}
               <div className="w-full flex flex-col gap-y-3">
                 <ClickToAddInputs
                   details={questions}
@@ -934,7 +969,7 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                               field.onChange(
                                 date
                                   ? format(date, "yyyy-MM-dd'T'HH:mm:ss")
-                                  : ""
+                                  : "",
                               )
                             }
                             value={field.value ? new Date(field.value) : null}
@@ -950,8 +985,8 @@ const ProductDetails: FC<ProductDetailsProps> = ({
                 {isLoading
                   ? "Saving..."
                   : data?.productId && data?.variantId
-                  ? "Update Product"
-                  : "Create Product"}
+                    ? "Update Product"
+                    : "Create Product"}
               </Button>
             </form>
           </Form>

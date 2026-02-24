@@ -6,6 +6,8 @@
 //- productId: string - The unique identifier of the product to be deleted.
 //Returns: Response indicating success or failure of the deletion operation.
 "use server";
+
+import "server-only";
 import { db } from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -18,7 +20,7 @@ export const deleteProduct = async (productId: string) => {
   //Ensure user has seller privileges
   if (user.privateMetadata.role !== "SELLER") {
     throw new Error(
-      "Forbidden: You do not have permission to perform this action"
+      "Forbidden: You do not have permission to perform this action",
     );
   }
 

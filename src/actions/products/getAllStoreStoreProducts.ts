@@ -5,7 +5,9 @@
 //Parameters:
 //- storeUrl: string - The unique URL identifier of the store whose products are to be fetched.
 //Returns: An array of product objects associated with the specified store. including the category,subcategory and variant details.
+"use server";
 
+import "server-only";
 import { db } from "@/lib/db";
 
 export const getAllStoreProducts = async (storeUrl: string) => {

@@ -1,3 +1,4 @@
+import { Weight } from "lucide-react";
 import { z } from "zod";
 
 export const productDetailsSchema = z
@@ -73,6 +74,8 @@ export const productDetailsSchema = z
       .min(2, "SKU must be at least 2 characters long")
       .max(50, "SKU must be at most 50 characters long"),
 
+    weight: z.number().min(0.01, "Please provide a valid product weight value"),
+
     keywords: z
       .string({
         error: "Keywords are required",
@@ -105,11 +108,11 @@ export const productDetailsSchema = z
         (sizes) =>
           sizes.every(
             (size) =>
-              size.size.length > 0 && size.quantity > 0 && size.price > 0
+              size.size.length > 0 && size.quantity > 0 && size.price > 0,
           ),
         {
           message: "All size inputs must be filled correctly",
-        }
+        },
       ),
     product_specs: z
       .object({
@@ -121,11 +124,11 @@ export const productDetailsSchema = z
       .refine(
         (product_specs) =>
           product_specs.every(
-            (spec) => spec.name.length > 0 && spec.value.length > 0
+            (spec) => spec.name.length > 0 && spec.value.length > 0,
           ),
         {
           message: "All product specification inputs must be filled correctly",
-        }
+        },
       ),
     variant_specs: z
       .object({
@@ -137,11 +140,11 @@ export const productDetailsSchema = z
       .refine(
         (variant_specs) =>
           variant_specs.every(
-            (spec) => spec.name.length > 0 && spec.value.length > 0
+            (spec) => spec.name.length > 0 && spec.value.length > 0,
           ),
         {
           message: "All variant specification inputs must be filled correctly",
-        }
+        },
       ),
     questions: z
       .object({
@@ -154,11 +157,11 @@ export const productDetailsSchema = z
         (questions) =>
           questions.every(
             (question) =>
-              question.question.length > 0 && question.answer.length > 0
+              question.question.length > 0 && question.answer.length > 0,
           ),
         {
           message: "All product question inputs must be filled correctly",
-        }
+        },
       ),
     isSale: z.boolean().default(false),
     saleEndDate: z.string().optional(),
