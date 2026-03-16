@@ -1,5 +1,7 @@
 "use client";
 import { CartProductType, ProductPageDataType } from "@/lib/type";
+import useCartStore from "@/cartStore/useCartStore";
+import { toast } from "react-hot-toast";
 
 import ProductSwiper from "./ProductSwiper";
 import ProductInfo from "./ProductInfo/ProductInfo";
@@ -18,6 +20,7 @@ import QuantitySelector from "./ProductInfo/QuantitySelector";
 import { cn } from "@/lib/utils";
 import SocialShare from "../shared/SocialShare";
 import { ProductVariantImage } from "@/generated/prisma";
+import useFromStore from "@/hooks/useFromStore";
 
 const ProductPageContainer = ({
   productData,
@@ -79,6 +82,41 @@ const ProductPageContainer = ({
     product.quantity > 0 && product.price > 0 && product.sizeId !== "";
 
   const isProductValidToBeAddedToCart = validateProduct(productToBeAddedToCart);
+
+  const cartItems = useFromStore(useCartStore, (state) => state.cart) as
+    | CartProductType[]
+    | undefined;
+  console.log(`This is the cart items from the store:`, cartItems);
+  //Get the store action to add items to cart
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  const maxQty = useMemo(() => {
+    const search_product = cartItems?.find(
+      (p) =>
+        p.productId === productData.productId &&
+        p.variantId === productData.variantId &&
+        p.sizeId === sizeId,
+    );
+    return search_product
+      ? search_product.stock - search_product.quantity
+      : productToBeAddedToCart.stock;
+  }, [
+    cartItems,
+    productData.productId,
+    productData.variantId,
+    sizeId,
+    productToBeAddedToCart.stock,
+  ]);
+
+  const handleAddToCart = () => {
+    if (!isProductValidToBeAddedToCart) return;
+    if (maxQty <= 0) {
+      toast.error("Sorry, this product is out of stock.");
+      return;
+    }
+    addToCart(productToBeAddedToCart);
+    toast.success("Product added to cart successfully!");
+  };
 
   return (
     <div className="relative">
@@ -150,8 +188,12 @@ const ProductPageContainer = ({
                     disabled={!isProductValidToBeAddedToCart}
                     className={cn(
                       "relative w-full py-2.5 min-w-20 bg-[#e6d0d2] hover:bg-[#e4cdce] text-[#FD384F] h-11 rounded-3xl leading-6 inline-block font-bold whitespace-nowrap border border-b-orange-200 transition-all duration-300 ease-in-out select-none cursor-pointer",
-                      { "cursor-not-allowed": !isProductValidToBeAddedToCart },
+                      {
+                        "cursor-not-allowed":
+                          !isProductValidToBeAddedToCart || maxQty <= 0,
+                      },
                     )}
+                    onClick={() => handleAddToCart()}
                   >
                     <span>Add to Cart</span>
                   </button>

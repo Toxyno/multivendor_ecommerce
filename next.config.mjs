@@ -3,6 +3,7 @@
 console.log("Loaded next.config.mjs");
 
 const nextConfig = {
+  reactStrictMode: false,
   allowedDevOrigins: [
     "https://brantley-troublous-galvanometrically.ngrok-free.dev",
   ],

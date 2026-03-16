@@ -79,7 +79,7 @@ export const retrieveProductDetails = async (
     include: {
       category: true,
       subCategory: true,
-      offerTags: true,
+      offerTag: true,
       store: true,
       specs: true,
       questions: true,
@@ -181,7 +181,7 @@ const formatProductResponse = (
   if (!product) return;
   const variant = product.variants?.[0];
   if (!variant) return null;
-  const { store, category, subCategory, offerTags, questions } = product;
+  const { store, category, subCategory, offerTag, questions } = product;
   const { images, colors, sizes } = variant;
 
   return {
@@ -197,7 +197,7 @@ const formatProductResponse = (
     images,
     category,
     subCategory,
-    offerTags,
+    offerTag,
     isSale: variant.isSale,
     saleEndDate: variant.saleEndDate,
     brand: product.brand,

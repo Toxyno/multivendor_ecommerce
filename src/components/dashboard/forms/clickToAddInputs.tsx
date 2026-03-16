@@ -3,17 +3,26 @@ import { PaintBucket } from "lucide-react";
 
 import { FC, useState } from "react";
 import { SketchPicker } from "react-color";
+import cn from "classnames";
 
-export interface Detail {
-  [key: string]: string | number | boolean | undefined;
+// export interface Detail {
+//   [key: string]: string | number | boolean | undefined;
+// }
+
+export interface Detail<
+  T = { [key: string]: string | number | boolean | undefined },
+> {
+  [key: string]: T[keyof T];
 }
 
-interface ClickToAddInputsProps {
-  details: Detail[]; //array of detail objects
-  setDetails: React.Dispatch<React.SetStateAction<Detail[]>>; //setter function for details state
-  initialDetail?: Detail; //optional initial detail object
+interface ClickToAddInputsProps<T extends Detail> {
+  details: T[]; //array of detail objects
+  setDetails: React.Dispatch<React.SetStateAction<T[]>>; //setter function for details state
+  initialDetail?: T; //optional initial detail object
   header: string; //Header Text for the Components
   colorPicker?: boolean; // Is Color Picker needed
+  containerClassName?: string; // Optional className for the container
+  inputClassName?: string; // Optional className for the input fields
 }
 
 /* PlusButton component for adding new detail inputs (moved to module scope) */
@@ -73,13 +82,15 @@ const MinusButton: FC<{ onClick: () => void }> = ({ onClick }) => {
 
 // function moved into ClickToAddInputs component so it can access props (details, setDetails, initialDetail)
 
-const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
+const ClickToAddInputs = <T extends Detail>({
   details,
   setDetails,
-  initialDetail = {}, //Default value for initial details is an empty object
+  initialDetail = {} as T, //Default value for initial details is an empty object
   header,
   colorPicker,
-}) => {
+  containerClassName = "",
+  inputClassName = "",
+}: ClickToAddInputsProps<T>) => {
   //State to manage toggling color picker
   const [colorPickerIndex, setColorPickerIndex] = useState<number | null>(null);
 
@@ -87,11 +98,11 @@ const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
   const handleDetailChange = (
     index: number,
     key: string,
-    value: string | number | boolean
+    value: string | number | boolean,
   ) => {
     //update the details array with the new details
     const updatedDetails = details.map((detail, i) =>
-      i === index ? { ...detail, [key]: value } : detail
+      i === index ? { ...detail, [key]: value } : detail,
     );
     setDetails(updatedDetails); // update details state
   };
@@ -120,7 +131,10 @@ const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
         <div key={dIndex} className="flex items-center gap-x-4">
           {/* Input for detail value */}
           {Object.keys(detail).map((key, kIndex) => (
-            <div key={kIndex} className="flex items-center gap-x-4">
+            <div
+              key={kIndex}
+              className={cn("flex items-center gap-x-4", containerClassName)}
+            >
               {/* Color picker toggles */}
               {key.toLowerCase() === "color" && colorPicker && (
                 <div className="flex gap-x-4">
@@ -129,7 +143,7 @@ const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
                     className="cursor-pointer"
                     onClick={() =>
                       setColorPickerIndex(
-                        colorPickerIndex === dIndex ? null : dIndex
+                        colorPickerIndex === dIndex ? null : dIndex,
                       )
                     }
                   >
@@ -168,7 +182,7 @@ const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
                 }
               /> */}
               <Input
-                className="w-28"
+                className={cn("w-28 placeholder:capitalize", inputClassName)}
                 type={typeof detail[key] === "number" ? "number" : "text"}
                 name={key}
                 placeholder={key}
@@ -189,7 +203,7 @@ const ClickToAddInputs: FC<ClickToAddInputsProps> = ({
                   handleDetailChange(
                     dIndex,
                     key,
-                    raw === "" ? "" : Number(raw)
+                    raw === "" ? "" : Number(raw),
                   );
                 }}
               />

@@ -25,6 +25,20 @@ const handleProductCreate = async (
     }),
     "productVariant",
   );
+  const freeShippingData =
+    product.freeShippingCountriesId &&
+    product.freeShippingCountriesId.length > 0
+      ? {
+          create: {
+            eligibaleCountries: {
+              create: product.freeShippingCountriesId.map((country) => ({
+                country: { connect: { id: country.value } },
+              })),
+            },
+          },
+        }
+      : undefined;
+
   const productData = {
     id: product.productId,
     name: product.name,
@@ -33,7 +47,7 @@ const handleProductCreate = async (
     store: { connect: { id: storeId } },
     category: { connect: { id: product.categoryId } },
     subCategory: { connect: { id: product.subCategoryId } },
-    //offerTag: { connect: { id: product.offerTagId } },
+    offerTag: { connect: { id: product.offerTagId } },
     brand: product.brand,
     specs: {
       create: product.product_specs.map((spec) => ({
@@ -54,7 +68,8 @@ const handleProductCreate = async (
           variantName: product.variantName,
           variantDescription: product.variantDescription,
           slug: variantSlug,
-          variantImage: product.images.map((img) => img.url).join(","),
+          // variantImage: product.images.map((img) => img.url).join(","),
+          variantImage: product.variantImage?.url || "",
           sku: product.sku,
           weight: product.weight,
           keywords: product.keywords.join(","),
@@ -81,7 +96,7 @@ const handleProductCreate = async (
             })),
           },
           specs: {
-            create: product.product_specs.map((spec) => ({
+            create: product.variant_specs.map((spec) => ({
               name: spec.name,
               value: spec.value,
             })),
@@ -92,22 +107,11 @@ const handleProductCreate = async (
         },
       ],
     },
-    //   shippingFeeMethod: product.shippingFeeMethod,
-    //   freeShippingForAllCountries: product.freeShippingForAllCountries,
-    //   freeShipping: product.freeShippingForAllCountries
-    //     ? undefined
-    //     : product.freeShippingCountriesIds &&
-    //       product.freeShippingCountriesIds.length > 0
-    //     ? {
-    //         create: {
-    //           eligibaleCountries: {
-    //             create: product.freeShippingCountriesIds.map((country) => ({
-    //               country: { connect: { id: country.value } },
-    //             })),
-    //           },
-    //         },
-    //       }
-    //     : undefined,
+    shippingFeeMethod: product.shippingFeeMethod,
+    freeShippingForAllCountries: product.freeShippingForAllCountries,
+    freeShipping: product.freeShippingForAllCountries
+      ? undefined
+      : freeShippingData,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
   };

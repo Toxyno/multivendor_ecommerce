@@ -38,7 +38,7 @@ const Title = ({ title, link, arrow }: TitleProps) => {
   }
 };
 
-const ProductList = async ({ products, title, link, arrow }: Props) => {
+const ProductList = ({ products, title, link, arrow }: Props) => {
   return (
     <div className="relative">
       {title && <Title title={title} link={link} arrow={arrow} />}

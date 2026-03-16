@@ -1,12 +1,17 @@
 import { getStoreDefaultShippingDetails } from "@/actions/stores/getStoreDefaultShippingDetails";
 import getAllSubCategories from "@/actions/subcategories/getAllSubCategory";
 import {
+  Cart,
+  CartItem,
   FreeShipping,
   FreeShippingCountry,
   Prisma,
   ProductVariantImage,
+  ShippingAddress,
+  ShippingFeeMethod,
   ShippingRate,
   Size,
+  Country as CountryPrisma,
 } from "@/generated/prisma/edge";
 import countries from "@/data/countries.json";
 import { getFilteredProducts } from "@/actions/products/getFilteredProducts";
@@ -42,19 +47,23 @@ export type ProductWithVariantType = {
   productId: string;
   variantId: string;
   name: string;
+  offerTagId?: string;
   //url: string;
-  colors: { color: string }[];
+  colors: { id?:string; color: string }[];
   sizes: {
+    id?:string;
     size: string;
     quantity: number;
     price: number;
     discount: number;
   }[];
   product_specs: {
+    id?:string;
     name: string;
     value: string;
   }[];
   variant_specs: {
+    id?:string;
     name: string;
     value: string;
   }[];
@@ -69,12 +78,16 @@ export type ProductWithVariantType = {
   description: string;
   variantName: string;
   variantDescription: string;
-  images: { url: string }[];
+  images: {id?:string; url: string }[];
   variantImage: { url: string } | null;
   questions: {
+    id?:string;
     question: string;
     answer: string;
   }[];
+  freeShippingForAllCountries: boolean;
+  freeShippingCountriesId: { id?:string; label: string; value:string }[];
+  shippingFeeMethod:ShippingFeeMethod
   createdAt: Date;
   updatedAt: Date;
 };
@@ -232,3 +245,10 @@ export type ReviewDetailsType={
   variant:string;
   color:string;
 }
+
+export type  CartWithCartItemsType =  Cart &{
+  cartItems: CartItem[];}
+
+  export type  UserShippingAddressType =  ShippingAddress &{
+  country: CountryPrisma}
+

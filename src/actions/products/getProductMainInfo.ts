@@ -15,6 +15,10 @@ export const getProductMainInfo = async (productId: string) => {
   //retrieve product main info from database
   const product = await db.product.findUnique({
     where: { id: productId },
+    include: {
+      questions: true,
+      specs: true,
+    },
   });
 
   if (!product) {
@@ -26,7 +30,17 @@ export const getProductMainInfo = async (productId: string) => {
     description: product.description,
     brand: product.brand,
     categoryId: product.categoryId,
-    subcategoryId: product.subCategoryId,
+    subCategoryId: product.subCategoryId,
     storeId: product.storeId,
+    offerTagId: product.offerTagId,
+    shippingFeeMethod: product.shippingFeeMethod,
+    questions: product.questions.map((q) => ({
+      question: q.question,
+      answer: q.answer,
+    })),
+    product_specs: product.specs.map((s) => ({
+      name: s.name,
+      value: s.value,
+    })),
   };
 };

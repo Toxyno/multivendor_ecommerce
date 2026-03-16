@@ -1,5 +1,6 @@
 import { Weight } from "lucide-react";
 import { z } from "zod";
+import { ShippingFeeMethod } from "@/generated/prisma/edge";
 
 export const productDetailsSchema = z
   .object({
@@ -165,6 +166,21 @@ export const productDetailsSchema = z
       ),
     isSale: z.boolean().default(false),
     saleEndDate: z.string().optional(),
+    freeShippingForAllCountries: z.boolean().default(false),
+    freeShippingCountriesId: z
+      .object({
+        id: z.string().optional(),
+        label: z.string(),
+        value: z.string(),
+      })
+      .array()
+      .optional()
+      .refine((ids) => ids?.every((item) => item.label && item.value), {
+        message: "Each Country must have at least one valid name and Id.",
+      })
+      .default([]),
+    shippingFeeMethod: z.nativeEnum(ShippingFeeMethod),
+    offerTagId: z.string().optional(),
   })
   .strict();
 

@@ -21,18 +21,21 @@ enum user_role {
 }
 
 model user {
-  Id        String    @id
-  name      String
-  email     String    @unique(map: "User_email_key")
-  picture   String    @db.Text
-  role      user_role @default(USER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  Id      String    @id
+  name    String
+  email   String    @unique(map: "User_email_key")
+  picture String    @db.Text
+  role    user_role @default(USER)
 
-  stores    Store[] @relation("UserToStore")
-  following Store[] @relation("UserToStoreFollowing")
+  stores            Store[]           @relation("UserToStore")
+  following         Store[]           @relation("UserToStoreFollowing")
+  reviews           Review[]          @relation("ReviewToUser")
+  carts             Cart?             @relation("UserToCart")
+  shippingAddresses ShippingAddress[] @relation("ShippingAddressToUser")
+  orders            Order[]           @relation("OrderToUser")
 
-  reviews Review[] @relation("ReviewToUser")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
@@ -93,6 +96,8 @@ model Store {
   products      Product[]      @relation("StoreToProduct")
   shippingRates ShippingRate[] @relation("ShippingRateToStore")
   followers     user[]         @relation("UserToStoreFollowing")
+  cartItems     CartItem[]     @relation("CartItemToStore")
+  orderGroups   OrderGroup[]   @relation("OrderGroupToStore")
 
   @@index([ownerId])
 }
@@ -128,12 +133,16 @@ model Product {
   subCategoryId String
   subCategory   SubCategory @relation("SubCategoryToProduct", fields: [subCategoryId], references: [id])
 
-  freeShippings FreeShipping[] @relation("ProductToFreeShipping")
+  offerTagId String?
+  offerTag   OfferTag? @relation(fields: [offerTagId], references: [id])
+
+  freeShippings               FreeShipping[] @relation("ProductToFreeShipping")
+  freeShippingForAllCountries Boolean        @default(false)
 
   specs     Spec[]      @relation("ProductToSpec")
   questions Questions[] @relation("ProductToQuestion")
-  offerTags OfferTag[]  @relation("OfferTagToProduct")
-  reviews   Review[]    @relation("ReviewToProduct")
+
+  reviews Review[] @relation("ReviewToProduct")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -141,6 +150,7 @@ model Product {
   @@index([storeId])
   @@index([categoryId])
   @@index([subCategoryId])
+  @@index([offerTagId])
 }
 
 model ProductVariant {
@@ -222,7 +232,7 @@ model OfferTag {
   name String
   url  String @unique
 
-  products Product[] @relation("OfferTagToProduct")
+  products Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -268,6 +278,8 @@ model Country {
   //states    state[]  @relation("CountryToState")
   shippingRates         ShippingRate[]        @relation("ShippingRateToCountry")
   freeShippingCountries FreeShippingCountry[] @relation("FreeShippingCountryToCountry")
+
+  shippingAddresses ShippingAddress[] @relation("ShippingAddressToCountry")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -362,4 +374,185 @@ model ReviewImage {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([reviewId])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      user       @relation("UserToCart", fields: [userId], references: [Id])
+  cartItems CartItem[] @relation("CartToCartItem")
+
+  shippingFeesTotal            Float @default(0)
+  cartTotalWithoutShippingFees Float @default(0)
+  cartTotalWithShippingFees    Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model CartItem {
+  id          String @id @default(uuid())
+  productId   String
+  variantId   String
+  sizeId      String
+  productSlug String
+  variantSlug String
+  sku         String
+  name        String
+  image       String
+  size        String
+  price       Float
+  quantity    Int    @default(1)
+  shippingFee Float  @default(0)
+  totalPrice  Float  @default(0)
+
+  cartId String
+  cart   Cart   @relation("CartToCartItem", fields: [cartId], references: [id], onDelete: Cascade)
+
+  storeId String
+  store   Store  @relation("CartItemToStore", fields: [storeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([cartId])
+  @@index([storeId])
+}
+
+model ShippingAddress {
+  id             String  @id @default(uuid())
+  firstName      String
+  lastName       String
+  phone          String
+  address1       String
+  address2       String?
+  city           String
+  state          String
+  postalCode     String
+  defaultAddress Boolean @default(false)
+
+  countryId String
+  country   Country @relation("ShippingAddressToCountry", fields: [countryId], references: [id])
+
+  userId String
+  user   user   @relation("ShippingAddressToUser", fields: [userId], references: [Id])
+
+  orders Order[] @relation("OrderToShippingAddress")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([countryId])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  FAILED
+  REFUNDED
+  PARTIALLY_SHIPPED
+  ONHOLD
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  DECLINED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CHARGE_BACK
+}
+
+model Order {
+  id          String @id @default(uuid())
+  shippingFee Float
+  subTotal    Float
+  total       Float
+
+  orderStatus   OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  shippingAddressId String
+  shippingAddress   ShippingAddress @relation("OrderToShippingAddress", fields: [shippingAddressId], references: [id])
+
+  userId String
+  user   user   @relation("OrderToUser", fields: [userId], references: [Id])
+
+  groups OrderGroup[] @relation("OrderGroupToOrder")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shippingAddressId])
+  @@index([userId])
+}
+
+//creating the order Group because each order can have group
+model OrderGroup {
+  id     String      @id @default(uuid())
+  status OrderStatus @default(PENDING)
+
+  shippingService     String
+  shippingDeliveryMin Int
+  shippingDeliveryMax Int
+  shippingFee         Float
+  subTotal            Float
+  total               Float
+
+  orderId String
+  order   Order  @relation("OrderGroupToOrder", fields: [orderId], references: [id])
+
+  storeId String
+  store   Store  @relation("OrderGroupToStore", fields: [storeId], references: [id])
+
+  items OrderItem[] @relation("orderItemToOrderGroup")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([storeId])
+}
+
+//create orderItem
+model OrderItem {
+  id String @id @default(uuid())
+
+  productId String
+  variantId String
+  sizeId String
+  
+
+  productSlug String
+  variantSlug String
+  sku         String
+  name        String
+  image       String
+  size        String
+  shippingFee Float  @default(0)
+
+ 
+  quantity   Int   @default(1)
+  price      Float
+  totalPrice Float
+
+  orderGroupId String
+  orderGroup   OrderGroup @relation("orderItemToOrderGroup", fields: [orderGroupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  
+  @@index([orderGroupId])
 }

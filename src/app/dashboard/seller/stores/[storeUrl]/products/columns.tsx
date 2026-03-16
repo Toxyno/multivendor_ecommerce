@@ -122,6 +122,13 @@ export const columns: ColumnDef<StoreProductType>[] = [
     },
   },
   {
+    accessorKey: "offerTag",
+    header: "Offer Tag",
+    cell: ({ row }) => {
+      return <span>{row.original.offerTag?.name}</span>;
+    },
+  },
+  {
     accessorKey: "subCategory",
     header: "SubCategory",
     cell: ({ row }) => {

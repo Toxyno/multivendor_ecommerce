@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 import handleUserCountry from "./lib/Helper/handleUserCountry";
 
 export default clerkMiddleware(async (auth, req, next) => {
-  const protectedRoutes = createRouteMatcher(["/dashboard", "/dashboard/(.*)"]);
+  const protectedRoutes = createRouteMatcher([
+    "/dashboard",
+    "/dashboard/(.*)",
+    "/checkout",
+    "/checkout/(.*)",
+  ]);
   if (protectedRoutes(req)) {
     const session = await auth();
     if (!session?.userId) {

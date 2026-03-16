@@ -46,6 +46,7 @@ export const upsertProduct = async (
         // Update existing variant and product
       } else {
         // Create new variant
+        console.log(`The product variant are :`, product);
         await handleCreateVariant(product);
       }
     } else {
@@ -53,6 +54,7 @@ export const upsertProduct = async (
       await handleProductCreate(product, store.id);
     }
   } catch (error) {
+    console.error("Error upserting product:", error);
     throw error;
   }
 };

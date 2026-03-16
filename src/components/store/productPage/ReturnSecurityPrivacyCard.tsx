@@ -42,7 +42,7 @@ export const SecurityPrivacyCard = () => {
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-1">
-          <ShieldCheck className="w-4 ml-4" />
+          <ShieldCheck className="w-4" />
           <span className="text-sm font-bold flex items-center">
             Security & Privacy
           </span>
